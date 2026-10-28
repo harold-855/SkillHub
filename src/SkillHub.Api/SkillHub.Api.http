@@ -1,6 +1,92 @@
-@SkillHub.Api_HostAddress = http://localhost:5109
+### Register a participant
+POST http://localhost:5109/api/v1/auth/register
+Content-Type: application/json
 
-GET {{SkillHub.Api_HostAddress}}/weatherforecast/
+{
+  "fullName": "Test Participant",
+  "email": "participant.test@example.com",
+  "password": "SkillHub_Test123!",
+  "confirmPassword": "SkillHub_Test123!"
+}
+
+### Get available workshops
+GET http://localhost:5109/api/v1/workshops
 Accept: application/json
 
-###
+
+### Get workshop by ID
+GET http://localhost:5109/api/v1/workshops/e13d8dc9-de0b-41ab-a2d8-a14a0df9776c
+Accept: application/json
+
+
+
+### Login as Employee
+POST http://localhost:5109/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "INSTRUCTOR_EMAIL",
+  "password": "INSTRUCTOR_PASSWORD"
+}
+
+### Create a workshop
+POST http://localhost:5109/api/v1/workshops
+Content-Type: application/json
+Authorization: Bearer {{employeeToken}}
+
+{
+  "code": "WORKSHOP-TEST-01",
+  "title": "Introduction to C#",
+  "description": "Learn the fundamentals of C# programming.",
+  "instructorEmail": "INSTRUCTOR_EMAIL",
+  "startDateTime": "2026-11-15T09:00:00",
+  "endDateTime": "2026-11-15T12:00:00",
+  "maximumCapacity": 20
+}
+
+### Get workshop by ID
+GET http://localhost:5109/api/v1/workshops/PEGA_AQUI_EL_ID
+Accept: application/json
+
+### Login as Participant
+POST http://localhost:5109/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "participant.test@example.com",
+  "password": "SkillHub_Test123!"
+}
+
+### Create an enrollment
+POST http://localhost:5109/api/v1/enrollments
+Content-Type: application/json
+Authorization: Bearer PEGA_AQUI_EL_TOKEN_DEL_PARTICIPANTE
+
+{
+  "workshopId": "PEGA_AQUI_EL_ID_DEL_TALLER"
+}
+
+### Get my enrollments
+GET http://localhost:5109/api/v1/enrollments/mine
+Accept: application/json
+Authorization: Bearer PEGA_AQUI_EL_TOKEN_DEL_PARTICIPANTE
+
+### Cancel an enrollment
+PATCH http://localhost:5109/api/v1/enrollments/PEGA_AQUI_EL_ID_DE_LA_INSCRIPCION/cancel
+Authorization: Bearer PEGA_AQUI_EL_TOKEN_DEL_PARTICIPANTE
+Accept: application/json
+
+### Get workshop enrollments
+GET http://localhost:5109/api/v1/workshops/PEGA_AQUI_EL_ID_DEL_TALLER/enrollments
+Accept: application/json
+Authorization: Bearer PEGA_AQUI_EL_TOKEN_DEL_EMPLEADO
+
+### Download enrollment certificate
+GET http://localhost:5109/api/v1/enrollments/PEGA_AQUI_EL_ID_DE_LA_INSCRIPCION/certificate
+Authorization: Bearer PEGA_AQUI_EL_TOKEN_DEL_PARTICIPANTE
+Accept: application/pdf
+
+### Get top workshops report
+GET http://localhost:5109/api/v1/reports/top-workshops
+Accept: application/json
+Authorization: Bearer PEGA_AQUI_EL_TOKEN_DEL_EMPLEADO

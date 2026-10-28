@@ -1,292 +1,243 @@
-# SkillHub
-
-## Description
-
+SkillHub
+Description
 SkillHub is a training center platform designed to manage workshops and participant enrollments.
 
-The application is being developed as a .NET solution following Clean Architecture principles. The platform will allow participants to register, log in, browse available workshops, enroll in workshops, manage their enrollments, and download enrollment certificates.
+The application is developed as a .NET solution following Clean Architecture principles. Participants can register, log in, browse available workshops, enroll in workshops, view their enrollments, cancel eligible enrollments, and download enrollment certificates.
 
-Employees will be able to manage workshops, review participants enrolled in workshops, import enrollments from Excel files, and access workshop reports.
+Employees can create workshops, review workshop enrollments, import enrollments from Excel files, and access reports showing the most popular workshops.
 
 The project is being developed as part of a .NET performance assessment.
-
-## Technologies
-
-The project is being developed using the following technologies:
-
+Technologies
 - C#
 - .NET 10
-- ASP.NET Core
+- ASP.NET Core Web API
 - Clean Architecture
-- Entity Framework Core
+- Entity Framework Core 10
 - PostgreSQL
-- ASP.NET Core Identity
-- JWT Authentication
-- Angular
-- Excel processing
-- PDF generation
+- Npgsql — PostgreSQL provider for Entity Framework Core
+- ASP.NET Core Identity — user and role management
+- JWT (JSON Web Tokens) — API authentication
+- EPPlus — Excel file reading
+- QuestPDF — PDF certificate generation
+- Angular — planned decoupled participant-facing frontend
+- JetBrains Rider — development environment
+  Architecture
+  The solution follows Clean Architecture principles. The Domain contains business entities and rules; Application contains use cases and abstractions; Infrastructure implements persistence and external-service integrations; and the API exposes HTTP endpoints.
+  SkillHub
+  ├── src
+  │   ├── SkillHub.Api
+  │   │   ├── Controllers
+  │   │   ├── Middleware
+  │   │   └── Program.cs
+  │   ├── SkillHub.Application
+  │   │   ├── DTOs
+  │   │   ├── Interfaces
+  │   │   ├── Services
+  │   │   └── UseCases
+  │   ├── SkillHub.Domain
+  │   │   ├── Entities
+  │   │   ├── Enums
+  │   │   └── Shared
+  │   └── SkillHub.Infrastructure
+  │       ├── Data
+  │       │   └── Seed
+  │       ├── Identity
+  │       ├── Imports
+  │       │   └── Excel
+  │       ├── Persistence
+  │       │   ├── Configurations
+  │       │   ├── Migrations
+  │       │   └── Repositories
+  │       ├── Seeding
+  │       └── Services
+  │           └── Pdf
+  ├── database
+  │   └── SkillHub_Database.sql
+  └── README.md
+  The database/SkillHub_Database.sql file should be included after exporting the database schema and data from PostgreSQL. If the export has not yet been placed there, this path describes the intended location.
+  Dependency Direction
+- SkillHub.Domain has no dependency on the other application layers or infrastructure technologies.
+- SkillHub.Application references SkillHub.Domain and defines use cases and interfaces.
+- SkillHub.Infrastructure references Application and Domain to implement persistence and external integrations.
+- SkillHub.Api references Application and Infrastructure, configures dependency injection, authentication, authorization, middleware, and HTTP endpoints.
+  Application does not need to know how a database or PDF/Excel library works. It uses interfaces; Infrastructure provides their implementations.
+  Domain Layer
+  The Domain layer contains the core business concepts and rules.
 
-> Additional technologies will be configured and documented as the corresponding layers and features are implemented.
+Current components:
+- BaseEntity
+- Participant
+- Instructor
+- Workshop
+- Enrollment
+- EnrollmentStatus
+- UserRole
+  Domain Model
+  Instructor 1 ───── * Workshop 1 ───── * Enrollment * ───── 1 Participant
+- An instructor can teach multiple workshops.
+- A workshop can have multiple enrollments.
+- A participant can have multiple enrollments.
+- Enrollment connects a participant with a workshop and stores its status and cancellation information.
+  The entities include basic validations for required data, workshop dates, capacity, and enrollment cancellation. The Domain layer does not depend on Entity Framework Core, PostgreSQL, ASP.NET Core Identity, JWT, Excel libraries, or PDF libraries.
+  Application Layer
+  The Application layer coordinates the system's operations. It contains DTOs, repository contracts, service abstractions, and use cases. It references Domain and does not directly depend on the database implementation.
+  DTOs
+  DTOs transfer data between the API and application operations without exposing domain entities directly. They cover authentication, participants, workshops, enrollments, imports, certificates, and reports.
+  Repository Interfaces
+- IParticipantRepository: retrieves and creates participants and checks whether an email exists.
+- IInstructorRepository: retrieves instructors and checks instructor email existence.
+- IWorkshopRepository: retrieves workshops, gets the public catalog, creates workshops, and checks workshop codes.
+- IEnrollmentRepository: retrieves, creates, and updates enrollments; checks active duplicates and schedule conflicts; and counts active enrollments.
+  Application Service Interfaces
+- IAuthenticationService
+- IJwtTokenGenerator
+- IEnrollmentExcelReader
+- ICertificateGenerator
+  These abstractions allow use cases to request operations without depending on specific technical implementations.
+  Implemented Use Cases
+  Authentication
+- RegisterParticipantUseCase
+- LoginUseCase
+  Workshop management
+- CreateWorkshopUseCase
+- GetAvailableWorkshopsUseCase
+- GetWorkshopByIdUseCase
+- GetTopWorkshopsUseCase
+  Enrollment management
+- CreateEnrollmentUseCase
+- GetMyEnrollmentsUseCase
+- GetWorkshopEnrollmentsUseCase
+- CancelEnrollmentUseCase
+  Excel import
+- ImportEnrollmentsUseCase
+  Certificates
+- GenerateEnrollmentCertificateUseCase
+  The enrollment use cases check rules such as workshop start time, active duplicate enrollments, capacity, and schedule conflicts. Cancellation rules and other business constraints should be verified against the assessment requirements during final review.
+  Infrastructure Layer
+  The Infrastructure layer provides technical implementations for persistence, identity, Excel reading, and PDF generation.
+  PostgreSQL and Entity Framework Core
+- SkillHubDbContext extends IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>.
+- The context exposes sets for participants, instructors, workshops, and enrollments.
+- Entity configurations are loaded through ApplyConfigurationsFromAssembly.
+- Repository implementations provide data access for the Application layer.
+- Entity Framework Core migrations are included in the project, including InitialCreate and AddIdentityTables.
+- PostgreSQL is accessed through the Npgsql EF Core provider.
+  Identity and JWT
+  ASP.NET Core Identity manages user accounts and roles. The application configures the Participant and Employee roles and uses JWT bearer authentication to protect endpoints. Employee-only operations are restricted by role-based authorization.
 
-## Architecture
+The initial data seeding process creates the employee accounts and assigns roles. Use the credentials configured for the project when demonstrating employee endpoints; do not publish real production passwords in a public repository.
+Initial Data
+InitialDataSeeder loads instructors, participants, and workshops from the workbook located at:
 
-The solution follows a Clean Architecture structure:
+src/SkillHub.Infrastructure/Data/Seed/SkillHub_Data.xlsx
 
-```text
-SkillHub
-│
-├── src
-│   │
-│   ├── SkillHub.Api
-│   ├── SkillHub.Application
-│   ├── SkillHub.Domain
-│   └── SkillHub.Infrastructure
-│
-└── README.md
-```
+The seeder also creates the corresponding Identity users and assigns roles. Enrollments are intentionally not created directly by the seeder; they are created through the enrollment workflow or Excel import endpoint.
 
-### Domain
+The workbook's workshop dates must satisfy the application's date rules when the seed process runs.
+Excel Enrollment Import
+EpplusEnrollmentExcelReader reads the Enrollments worksheet and expects the columns ParticipantEmail and WorkshopCode.
 
-The Domain layer contains the core business concepts and rules of the application.
+The import use case processes rows through the normal enrollment use case, so imported records are subject to the same enrollment validations. The result includes totals, successful enrollments, and rejected rows with reasons.
+PDF Certificates
+PdfCertificateGenerator uses QuestPDF to generate enrollment certificates. The Application layer requests generation through ICertificateGenerator, keeping the PDF library out of the Application and Domain layers.
 
-The current Domain layer contains:
+The certificate includes SkillHub branding, the title “Constancia de inscripción”, participant details, workshop details, instructor, workshop dates/times, enrollment date, and generation date.
+API Endpoints
+The API uses versioned routes under /api/v1.
+Method	Endpoint	Access	Purpose
+POST	/api/v1/auth/register	Public	Register a participant
+POST	/api/v1/auth/login	Public	Authenticate and obtain a JWT
+GET	/api/v1/workshops	Public	List workshops available in the public catalog
+GET	/api/v1/workshops/{id}	Public	Get workshop details
+POST	/api/v1/workshops	Employee	Create a workshop
+GET	/api/v1/workshops/{id}/enrollments	Employee	List enrollments for a workshop
+POST	/api/v1/enrollments	Participant	Enroll in a workshop
+GET	/api/v1/enrollments/mine	Participant	List the current participant's enrollments
+PATCH	/api/v1/enrollments/{id}/cancel	Owner or Employee	Cancel an enrollment when permitted
+POST	/api/v1/enrollments/import	Employee	Import enrollments from an Excel file
+GET	/api/v1/enrollments/{id}/certificate	Owner or Employee	Download an enrollment certificate as PDF
+GET	/api/v1/reports/top-workshops	Employee	List workshops ordered by active enrollment count
 
-- `BaseEntity`
-- `Participant`
-- `Instructor`
-- `Workshop`
-- `Enrollment`
-- `EnrollmentStatus`
-- `UserRole`
 
-### Current Domain Model
-
-The main relationships are:
-
-```text
-Instructor
-    │
-    │ 1
-    │
-    │ *
-    ▼
-Workshop
-    │
-    │ 1
-    │
-    │ *
-    ▼
-Enrollment
-    ▲
-    │ *
-    │
-    │ 1
-    │
-Participant
-```
-
-A participant can have multiple enrollments.
-
-A workshop can have multiple enrollments.
-
-An instructor can teach multiple workshops.
-
-`Enrollment` connects participants with workshops and stores information about the enrollment status and cancellation.
-
-## Current Progress
-
-### Domain Layer
-
-The Domain layer has been completed with the following components:
-
-- Base entity with a `Guid` identifier.
-- Participant entity.
-- Instructor entity.
-- Workshop entity.
-- Enrollment entity.
-- Enrollment status enumeration.
-- User role enumeration.
-- Basic domain validations for required data.
-- Workshop date validations.
-- Enrollment cancellation behavior.
-
-The Domain layer does not depend on Entity Framework Core, PostgreSQL, ASP.NET Core Identity, JWT, Excel libraries, or PDF libraries.
-
-## Installation
-
-### Prerequisites
-
-Before running the project, make sure the following tools are installed:
-
+Authentication and authorization requirements are enforced by the API. Exact request/response payloads and all business-rule outcomes should be checked during the final API review.
+Error Handling
+The API includes exception-handling middleware that returns structured Problem Details responses. The current mappings include:
+- ArgumentException → 400 Bad Request
+- UnauthorizedAccessException → 401 Unauthorized
+- KeyNotFoundException → 404 Not Found
+- InvalidOperationException → 409 Conflict
+- Other unhandled exceptions → 500 Internal Server Error
+  These mappings should be verified against the expected HTTP semantics during final review.
+  Installation and Configuration
+  Prerequisites
 - .NET 10 SDK
+- PostgreSQL
 - Git
 - JetBrains Rider or another compatible .NET IDE
+  Clone the Repository
+  git clone https://github.com/harold-855/SkillHub.git
+  cd SkillHub
+  Configure the Database Connection
+  Configure the ConnectionStrings:DefaultConnection setting for your local PostgreSQL database. Keep local passwords and other secrets out of source control. Use local configuration, user secrets, or environment variables as appropriate.
 
-### Clone the repository
+The API also requires JWT settings under Jwt, including:
+- SecretKey — a secret key with at least 32 bytes
+- Issuer
+- Audience
+  Use your own local values. Never commit real production secrets.
+  Restore and Build
+  dotnet restore
+  dotnet build
+  Database Migrations
+  The Infrastructure project contains Entity Framework Core migrations. Ensure the connection string is configured before applying migrations. From the solution root, a typical command is:
+  dotnet ef database update --project src/SkillHub.Infrastructure --startup-project src/SkillHub.Api
+  If the EF Core CLI tool is not installed, install it according to the official .NET tooling instructions. The command assumes the project paths match the repository structure above.
+  Run the API
+  From JetBrains Rider, select SkillHub.Api as the startup project and run it.
 
-Clone the repository using:
-
-```bash
-git clone https://github.com/harold-855/SkillHub.git
-```
-
-Move into the project directory:
-
-```bash
-cd SkillHub
-```
-
-### Restore the dependencies
-
-Run:
-
-```bash
-dotnet restore
-```
-
-### Build the solution
-
-Run:
-
-```bash
-dotnet build
-```
-
-## Running the Application
-
-The API project can be started from JetBrains Rider by selecting `SkillHub.Api` as the startup project and running the application.
-
-It can also be started from the terminal using:
-
-```bash
+Alternatively:
 dotnet run --project src/SkillHub.Api
-```
+In development, the API exposes its OpenAPI document through the configured OpenAPI endpoint. Use the actual URL printed by the application when it starts.
+Initial Employee Accounts
+Employee accounts are created by the initial seeding process. Enter the actual seeded employee credentials here before submission:
+- Email: REPLACE_WITH_SEEDED_EMPLOYEE_EMAIL
+- Password: REPLACE_WITH_SEEDED_EMPLOYEE_PASSWORD
+  Replace these placeholders with the correct assessment/demo credentials. Do not commit any real or reused password that should remain secret.
+  Database Export
+  The assessment requires a SQL script containing both the database schema and data.
 
-> Database configuration, Identity, JWT authentication, initial data, Excel import, PDF generation, and frontend configuration will be added to this README as the corresponding features are implemented.
+Export the SkillHub PostgreSQL database as a plain SQL file and place it at:
 
-## Application Layer
+database/SkillHub_Database.sql
 
-The Application layer contains the use cases that coordinate the system's operations. It defines the interfaces required to access data and external services without depending directly on infrastructure technologies.
+The export should include table definitions and data, not only the schema or only the data. Check the file before submission to confirm it contains SQL statements for creating the database objects and restoring the records.
+Frontend
+The participant-facing Angular frontend is planned as a separate application, not as a monolithic part of the ASP.NET Core API. It should support participant registration and login, browsing workshops and available seats, enrolling, viewing personal enrollments, cancelling eligible enrollments, and downloading PDF certificates.
 
-This layer references the Domain layer and uses its entities and business rules to implement the application's functionality.
-
-### Data Transfer Objects (DTOs)
-
-DTOs are used to transfer information between application components without exposing domain entities directly.
-
-The current DTOs are organized into the following categories:
-
-- **Authentication:** Registration requests, login requests, and authentication responses.
-- **Certificates:** Data required to generate enrollment certificates.
-- **Enrollments:** Enrollment creation requests and enrollment responses.
-- **Imports:** Results and error details for Excel enrollment imports.
-- **Participants:** Participant information and participant summaries.
-- **Workshops:** Workshop creation requests, workshop responses, workshop details, and top-workshop report data.
-
-### Repository Interfaces
-
-The Application layer defines repository interfaces that describe the data access operations required by the use cases.
-
-The current interfaces are:
-
-- `IParticipantRepository`: Defines operations to retrieve, create, and check the existence of participants.
-- `IInstructorRepository`: Defines operations to retrieve instructors and check whether an instructor exists by email.
-- `IWorkshopRepository`: Defines operations to retrieve workshops, obtain available workshops, retrieve all workshops, create workshops, and check workshop codes.
-- `IEnrollmentRepository`: Defines operations to retrieve enrollments, create and update enrollments, check duplicate active enrollments, detect schedule conflicts, and count active enrollments.
-
-These interfaces allow the Application layer to remain independent of the database implementation.
-
-### Authentication
-
-The authentication use cases currently include:
-
-- `RegisterParticipantUseCase`: Validates participant registration data and delegates account registration to the authentication service.
-- `LoginUseCase`: Validates login data and delegates authentication to the authentication service.
-
-The authentication interface is designed to support a future implementation using ASP.NET Core Identity and JSON Web Tokens (JWT).
-
-Identity integration, token generation, and authorization configuration are still pending.
-
-### Workshop Management
-
-The workshop use cases currently include:
-
-- `CreateWorkshopUseCase`: Validates the instructor and workshop code before creating a workshop.
-- `GetAvailableWorkshopsUseCase`: Retrieves workshops for the public catalog and calculates available seats.
-- `GetWorkshopByIdUseCase`: Retrieves the details of a specific workshop.
-- `GetTopWorkshopsUseCase`: Builds a report of workshops ordered by the number of active enrollments.
-
-The repository interface distinguishes between retrieving available workshops and retrieving all workshops, allowing the public catalog and employee reports to use different queries.
-
-### Enrollment Management
-
-The enrollment use cases currently include:
-
-- `CreateEnrollmentUseCase`: Validates participant existence, workshop availability, duplicate active enrollments, capacity, and schedule conflicts before creating an enrollment.
-- `GetMyEnrollmentsUseCase`: Retrieves the enrollments associated with a participant.
-- `GetWorkshopEnrollmentsUseCase`: Retrieves enrollment information for a specific workshop.
-- `CancelEnrollmentUseCase`: Checks ownership, enrollment status, workshop start time, and the participant cancellation deadline before requesting that the enrollment changes be persisted.
-
-The enrollment process is designed to prevent duplicate active enrollments, overbooking, and schedule conflicts.
-
-The repository implementation and database persistence still need to be completed in the Infrastructure layer.
-
-### Excel Enrollment Import
-
-The application includes an initial implementation of `ImportEnrollmentsUseCase` and the following supporting components:
-
-- `IEnrollmentExcelReader`: Defines the contract for reading enrollment data from an Excel file.
-- `EnrollmentImportRow`: Represents an individual row containing a participant email and workshop code.
-- `EnrollmentImportResult`: Represents the import summary, including the total number of rows, successful enrollments, rejected rows, and error details.
-- `EnrollmentImportError`: Records the row number, participant email, workshop code, and rejection reason.
-
-The import use case reuses `CreateEnrollmentUseCase` so that imported enrollments follow the same business validations as regular enrollments.
-
-The Excel reader implementation, file upload endpoint, and complete import workflow are still pending.
-
-### Enrollment Certificates
-
-The application includes `GenerateEnrollmentCertificateUseCase`, which:
-
-1. Retrieves the enrollment.
-2. Checks that the enrollment is active.
-3. Verifies whether the current user is authorized to download the certificate.
-4. Retrieves the participant, workshop, and instructor information.
-5. Builds an `EnrollmentCertificateData` object.
-6. Requests PDF generation through `ICertificateGenerator`.
-
-The `ICertificateGenerator` interface defines the contract for generating a certificate from the required data.
-
-The actual PDF generation implementation will be developed in Infrastructure. The API endpoint and download workflow are also pending.
-
-## Current Implementation Status
-
-The Domain and Application projects have been created, and the solution has compiled successfully during development.
-
-The current implementation includes the main domain entities, repository contracts, DTOs, and use cases for authentication, workshop management, enrollments, Excel import preparation, certificates, and reporting.
-
-However, successful compilation does not mean that every feature is fully implemented or operational.
-
-The following work remains:
-
-- Implement Entity Framework Core persistence with PostgreSQL.
-- Create the database context and entity mappings.
-- Implement the repository interfaces in Infrastructure.
-- Configure ASP.NET Core Identity and JWT authentication.
-- Implement employee and participant authorization.
-- Load the required initial data and accounts.
-- Implement Excel file reading and the import endpoint.
-- Implement PDF certificate generation.
-- Create the REST API controllers and endpoints.
-- Develop the decoupled Angular frontend.
-- Generate and validate database migrations.
-- Prepare the final SQL schema and data script.
-- Complete testing and verify the required business rules.
-
-## Next Development Stage
-
-The next stage is the Infrastructure layer.
-
-This layer will implement the interfaces defined in Application and provide the technical components required for database access, authentication integration, Excel processing, and PDF generation.
-
-The objective is to preserve the Clean Architecture dependency direction while connecting the application's use cases to the required technologies.
+Status: Angular frontend implementation and end-to-end integration remain to be completed.
+Current Implementation Status
+The following backend components have been created:
+- Domain entities, enums, and basic business validations.
+- Application DTOs, repository interfaces, service abstractions, and use cases.
+- PostgreSQL persistence with EF Core, entity configurations, repositories, and migrations.
+- ASP.NET Core Identity roles and JWT authentication configuration.
+- Initial data seeding from SkillHub_Data.xlsx.
+- API controllers for authentication, workshops, enrollments, and reports.
+- Excel enrollment reader and import endpoint.
+- PDF certificate generation through QuestPDF.
+- Employee authorization for employee-only endpoints.
+- Exception-handling middleware.
+  Implementation does not by itself guarantee that every assessment rule has been fully verified. The following tasks remain before delivery:
+- Complete and integrate the Angular frontend.
+- Confirm the SQL export contains both schema and data and is stored in the repository.
+- Replace the employee credential placeholders with the intended demo credentials.
+- Complete the README author details.
+- Perform the final review of endpoint behavior, authorization, cancellation deadlines, partial Excel-import persistence, seed-data dates, and other assessment rules.
+- Run final end-to-end checks.
+- Create the final ZIP deliverable and confirm the public GitHub repository is ready for submission.
+  Author
+  Complete this section before submission:
+- Full name: REPLACE_WITH_YOUR_FULL_NAME
+- Clan: REPLACE_WITH_YOUR_CLAN
+- Email: REPLACE_WITH_YOUR_EMAIL
+- Document number: REPLACE_WITH_YOUR_DOCUMENT_NUMBER

@@ -10,8 +10,4 @@
       <ProjectReference Include="..\SkillHub.Domain\SkillHub.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Services\" />
-    </ItemGroup>
-
 </Project>
