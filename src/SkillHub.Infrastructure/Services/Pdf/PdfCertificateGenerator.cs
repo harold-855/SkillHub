@@ -6,8 +6,16 @@ using SkillHub.Application.Interfaces.Documents;
 
 namespace SkillHub.Infrastructure.Services.Pdf;
 
+/// <summary>
+/// QuestPDF implementation of <see cref="ICertificateGenerator"/> rendering official enrollment proof documents.
+/// </summary>
 public class PdfCertificateGenerator : ICertificateGenerator
 {
+    /// <summary>
+    /// Builds and renders the certificate document layout according to assessment specification.
+    /// </summary>
+    /// <param name="certificateData">The participant and workshop metadata.</param>
+    /// <returns>A rendered PDF document byte array.</returns>
     public Task<byte[]> GenerateAsync(
         EnrollmentCertificateData certificateData)
     {

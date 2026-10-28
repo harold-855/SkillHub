@@ -7,11 +7,18 @@ using SkillHub.Infrastructure.Persistence;
 
 namespace SkillHub.Infrastructure.Seeding;
 
+/// <summary>
+/// Data seeder reading initial instructors, participants, and workshops from the provided Excel workbook
+/// and populating both domain entities and ASP.NET Core Identity user accounts.
+/// </summary>
 public class InitialDataSeeder
 {
     private readonly SkillHubDbContext _dbContext;
     private readonly UserManager<ApplicationUser> _userManager;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InitialDataSeeder"/> class.
+    /// </summary>
     public InitialDataSeeder(
         SkillHubDbContext dbContext,
         UserManager<ApplicationUser> userManager)
@@ -20,6 +27,10 @@ public class InitialDataSeeder
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Reads and seeds instructors, participants, and workshops from the designated Excel file.
+    /// </summary>
+    /// <param name="filePath">The absolute path to SkillHub_Data.xlsx.</param>
     public async Task SeedAsync(string filePath)
     {
         if (!File.Exists(filePath))

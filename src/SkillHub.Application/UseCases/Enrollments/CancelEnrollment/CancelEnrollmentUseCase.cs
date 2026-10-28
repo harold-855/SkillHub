@@ -3,11 +3,19 @@ using SkillHub.Domain.Enums;
 
 namespace SkillHub.Application.UseCases.Enrollments.CancelEnrollment;
 
+/// <summary>
+/// Use case managing enrollment cancellation.
+/// Enforces business rules: participants can only cancel their own enrollments up to 24 hours
+/// prior to workshop start; employees can cancel any enrollment as long as the workshop hasn't started yet.
+/// </summary>
 public class CancelEnrollmentUseCase
 {
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IWorkshopRepository _workshopRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CancelEnrollmentUseCase"/> class.
+    /// </summary>
     public CancelEnrollmentUseCase(
         IEnrollmentRepository enrollmentRepository,
         IWorkshopRepository workshopRepository)
@@ -16,6 +24,12 @@ public class CancelEnrollmentUseCase
         _workshopRepository = workshopRepository;
     }
 
+    /// <summary>
+    /// Validates cancellation permissions and timing constraints, then transitions enrollment to Cancelled status.
+    /// </summary>
+    /// <param name="enrollmentId">The enrollment unique identifier.</param>
+    /// <param name="currentUserId">The user identifier initiating cancellation.</param>
+    /// <param name="isEmployee">Flag indicating whether the user has administrative employee privileges.</param>
     public async Task ExecuteAsync(
         Guid enrollmentId,
         Guid currentUserId,

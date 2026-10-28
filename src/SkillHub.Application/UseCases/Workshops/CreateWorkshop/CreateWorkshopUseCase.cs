@@ -4,11 +4,17 @@ using SkillHub.Domain.Entities;
 
 namespace SkillHub.Application.UseCases.Workshops.CreateWorkshop;
 
+/// <summary>
+/// Use case managing workshop publication by authorized center employees.
+/// </summary>
 public class CreateWorkshopUseCase
 {
     private readonly IWorkshopRepository _workshopRepository;
     private readonly IInstructorRepository _instructorRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateWorkshopUseCase"/> class.
+    /// </summary>
     public CreateWorkshopUseCase(
         IWorkshopRepository workshopRepository,
         IInstructorRepository instructorRepository)
@@ -17,6 +23,11 @@ public class CreateWorkshopUseCase
         _instructorRepository = instructorRepository;
     }
 
+    /// <summary>
+    /// Validates instructor existence, ensures code uniqueness, and persists a new workshop aggregate.
+    /// </summary>
+    /// <param name="request">The creation payload.</param>
+    /// <returns>The unique identifier of the newly created workshop.</returns>
     public async Task<Guid> ExecuteAsync(CreateWorkshopRequest request)
     {
         var instructor = await _instructorRepository

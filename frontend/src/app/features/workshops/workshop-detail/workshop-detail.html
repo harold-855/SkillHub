@@ -1,0 +1,121 @@
+<div class="container detail-page">
+  <div class="back-nav">
+    <a routerLink="/workshops" class="btn btn-secondary btn-sm">
+      ← Volver al catálogo de talleres
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando información del taller...</p>
+    </div>
+  } @else if (workshop(); as item) {
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        <span class="alert-icon">✓</span>
+        <div><strong>¡Éxito!</strong> {{ successMessage() }}</div>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        <span class="alert-icon">⚠</span>
+        <div><strong>Aviso:</strong> {{ errorMessage() }}</div>
+      </div>
+    }
+
+    <div class="detail-layout">
+      <!-- Main Content Card -->
+      <div class="main-card card">
+        <div class="detail-header">
+          <div class="code-badge-wrapper">
+            <span class="badge badge-gray code-badge">{{ item.code }}</span>
+            <span
+              class="badge"
+              [class.badge-success]="item.availableSeats > 0"
+              [class.badge-danger]="item.availableSeats === 0"
+            >
+              {{ item.availableSeats > 0 ? item.availableSeats + ' cupos disponibles' : 'Agotado' }}
+            </span>
+          </div>
+          <h1 class="workshop-title">{{ item.title }}</h1>
+        </div>
+
+        <section class="section-block">
+          <h3>Descripción del Taller</h3>
+          <p class="description-text">{{ item.description }}</p>
+        </section>
+
+        <section class="section-block">
+          <h3>Información del Instructor</h3>
+          <div class="instructor-card">
+            <div class="instructor-avatar">👨‍🏫</div>
+            <div class="instructor-info">
+              <h4>{{ item.instructorName }}</h4>
+              <p class="instructor-specialty"><strong>Especialidad:</strong> {{ item.instructorSpecialty }}</p>
+              <p class="instructor-email"><strong>Correo de contacto:</strong> {{ item.instructorEmail }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Sidebar / Summary Card -->
+      <aside class="sidebar-card card">
+        <h3>Detalles de la Sesión</h3>
+
+        <div class="info-list">
+          <div class="info-item">
+            <span class="info-label">📅 Fecha de Inicio:</span>
+            <span class="info-value">{{ item.startDateTime | date: 'EEEE, d MMMM yyyy' }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">🕒 Hora de Inicio:</span>
+            <span class="info-value">{{ item.startDateTime | date: 'hh:mm a' }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">🏁 Hora de Fin:</span>
+            <span class="info-value">{{ item.endDateTime | date: 'hh:mm a' }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">👥 Cupo Máximo:</span>
+            <span class="info-value">{{ item.maximumCapacity }} asistentes</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">🎟️ Cupos Disponibles:</span>
+            <span class="info-value" [class.text-danger]="item.availableSeats === 0">
+              {{ item.availableSeats }}
+            </span>
+          </div>
+        </div>
+
+        <div class="sidebar-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            [disabled]="item.availableSeats <= 0 || isEnrolling()"
+            (click)="onEnroll()"
+          >
+            @if (isEnrolling()) {
+              <span>Inscribiendo...</span>
+            } @else if (item.availableSeats <= 0) {
+              <span>Taller Agotado</span>
+            } @else {
+              <span>Inscribirme en este Taller</span>
+            }
+          </button>
+
+          @if (!authService.isAuthenticated()) {
+            <p class="hint-text">
+              * Para inscribirte debes <a routerLink="/login">iniciar sesión</a> con tu cuenta de participante.
+            </p>
+          }
+        </div>
+      </aside>
+    </div>
+  }
+</div>

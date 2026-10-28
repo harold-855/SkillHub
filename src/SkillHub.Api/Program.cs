@@ -38,6 +38,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
+// Configure CORS for decoupled frontend applications.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Register authentication use cases.
 builder.Services.AddScoped<RegisterParticipantUseCase>();
 builder.Services.AddScoped<LoginUseCase>();
@@ -190,6 +201,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS middleware for decoupled client requests before authentication & authorization.
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

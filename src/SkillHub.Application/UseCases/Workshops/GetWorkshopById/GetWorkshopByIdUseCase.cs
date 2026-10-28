@@ -3,12 +3,18 @@ using SkillHub.Application.Interfaces.Repositories;
 
 namespace SkillHub.Application.UseCases.Workshops.GetWorkshopById;
 
+/// <summary>
+/// Use case retrieving comprehensive details for a specific workshop, including instructor contact and available seats.
+/// </summary>
 public class GetWorkshopByIdUseCase
 {
     private readonly IWorkshopRepository _workshopRepository;
     private readonly IInstructorRepository _instructorRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetWorkshopByIdUseCase"/> class.
+    /// </summary>
     public GetWorkshopByIdUseCase(
         IWorkshopRepository workshopRepository,
         IInstructorRepository instructorRepository,
@@ -19,6 +25,11 @@ public class GetWorkshopByIdUseCase
         _enrollmentRepository = enrollmentRepository;
     }
 
+    /// <summary>
+    /// Finds a workshop by GUID, retrieves instructor metadata, and calculates current seat availability.
+    /// </summary>
+    /// <param name="id">The workshop unique identifier.</param>
+    /// <returns>The workshop details response, or null if not found.</returns>
     public async Task<WorkshopDetailsResponse?> ExecuteAsync(Guid id)
     {
         var workshop = await _workshopRepository.GetByIdAsync(id);

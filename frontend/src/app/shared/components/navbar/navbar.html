@@ -1,0 +1,37 @@
+<header class="navbar-wrapper">
+  <div class="container navbar-container">
+    <a routerLink="/workshops" class="navbar-brand">
+      <span class="brand-badge">&lt;/&gt;</span>
+      <span class="brand-text">Skill<strong>Hub</strong></span>
+    </a>
+
+    <nav class="navbar-nav">
+      <a routerLink="/workshops" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-link">
+        Talleres Disponibles
+      </a>
+
+      @if (authService.isAuthenticated() && authService.isParticipant()) {
+        <a routerLink="/my-enrollments" routerLinkActive="active" class="nav-link">
+          Mis Inscripciones
+        </a>
+      }
+    </nav>
+
+    <div class="navbar-actions">
+      @if (authService.isAuthenticated()) {
+        <div class="user-info">
+          <span class="user-email">{{ authService.currentUser()?.email }}</span>
+          <span class="badge" [class.badge-info]="authService.isParticipant()" [class.badge-warning]="authService.isEmployee()">
+            {{ authService.isParticipant() ? 'Participante' : 'Empleado' }}
+          </span>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="onLogout()">
+          Cerrar Sesión
+        </button>
+      } @else {
+        <a routerLink="/login" class="btn btn-secondary btn-sm">Iniciar Sesión</a>
+        <a routerLink="/register" class="btn btn-primary btn-sm">Registrarse</a>
+      }
+    </div>
+  </div>
+</header>

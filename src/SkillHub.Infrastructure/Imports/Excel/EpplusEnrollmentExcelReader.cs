@@ -3,8 +3,14 @@ using SkillHub.Application.Interfaces.Imports;
 
 namespace SkillHub.Infrastructure.Imports.Excel;
 
+/// <summary>
+/// EPPlus implementation of <see cref="IEnrollmentExcelReader"/> that parses rows from the 'Enrollments' sheet.
+/// </summary>
 public class EpplusEnrollmentExcelReader : IEnrollmentExcelReader
 {
+    /// <summary>
+    /// Initializes the reader and sets non-commercial EPPlus license context.
+    /// </summary>
     public EpplusEnrollmentExcelReader()
     {
         // Configure this only if your use qualifies for
@@ -13,6 +19,11 @@ public class EpplusEnrollmentExcelReader : IEnrollmentExcelReader
             "Harold Aristizabal");
     }
 
+    /// <summary>
+    /// Reads rows from the 'Enrollments' sheet, dynamically locating ParticipantEmail and WorkshopCode headers.
+    /// </summary>
+    /// <param name="fileStream">The binary stream containing the workbook.</param>
+    /// <returns>A collection of parsed import rows.</returns>
     public Task<IReadOnlyCollection<EnrollmentImportRow>> ReadAsync(
         Stream fileStream)
     {

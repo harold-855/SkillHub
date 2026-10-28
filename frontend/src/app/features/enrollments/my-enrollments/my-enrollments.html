@@ -1,0 +1,124 @@
+<div class="my-enrollments-page container">
+  <div class="page-header">
+    <div>
+      <span class="badge badge-info header-badge">Portal del Participante</span>
+      <h1 class="page-title">Mis Inscripciones</h1>
+      <p class="page-subtitle">Gestiona tus inscripciones a talleres y descarga tus constancias oficiales en PDF.</p>
+    </div>
+    <div>
+      <a routerLink="/workshops" class="btn btn-secondary btn-sm">
+        + Explorar más talleres
+      </a>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <span class="alert-icon">✓</span>
+      <div><strong>¡Operación exitosa!</strong> {{ successMessage() }}</div>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <span class="alert-icon">⚠</span>
+      <div><strong>Aviso:</strong> {{ errorMessage() }}</div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando tus inscripciones...</p>
+    </div>
+  } @else if (enrollments().length === 0) {
+    <div class="empty-state card">
+      <div class="empty-icon">📝</div>
+      <h3>Aún no tienes inscripciones registradas</h3>
+      <p>Inscríbete a cualquiera de nuestros talleres prácticos para comenzar tu aprendizaje.</p>
+      <a routerLink="/workshops" class="btn btn-primary" style="margin-top: 1rem;">
+        Ver Talleres Disponibles
+      </a>
+    </div>
+  } @else {
+    <div class="enrollments-list">
+      @for (enrollment of enrollments(); track enrollment.id) {
+        <div class="enrollment-card card" [class.cancelled-card]="isCancelled(enrollment)">
+          <div class="card-header-row">
+            <div class="title-group">
+              <span class="badge badge-gray code-badge">{{ enrollment.workshopCode }}</span>
+              <h3 class="enrollment-title">{{ enrollment.workshopTitle }}</h3>
+            </div>
+
+            <div>
+              @if (isActive(enrollment)) {
+                <span class="badge badge-success">Activa</span>
+              } @else {
+                <span class="badge badge-danger">Cancelada</span>
+              }
+            </div>
+          </div>
+
+          <div class="dates-grid">
+            <div class="date-item">
+              <span class="date-label">📅 Horario del Taller:</span>
+              <span class="date-val">
+                {{ enrollment.workshopStartDateTime | date: 'dd/MM/yyyy, hh:mm a' }} —
+                {{ enrollment.workshopEndDateTime | date: 'hh:mm a' }}
+              </span>
+            </div>
+
+            <div class="date-item">
+              <span class="date-label">🕒 Fecha de Inscripción:</span>
+              <span class="date-val">{{ enrollment.enrolledAt | date: 'dd/MM/yyyy, hh:mm a' }}</span>
+            </div>
+
+            @if (enrollment.cancelledAt) {
+              <div class="date-item">
+                <span class="date-label">❌ Fecha de Cancelación:</span>
+                <span class="date-val text-danger">{{ enrollment.cancelledAt | date: 'dd/MM/yyyy, hh:mm a' }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="enrollment-actions">
+            @if (isActive(enrollment)) {
+              <button
+                type="button"
+                class="btn btn-outline btn-sm download-btn"
+                [disabled]="downloadingId() === enrollment.id"
+                (click)="onDownloadCertificate(enrollment)"
+              >
+                @if (downloadingId() === enrollment.id) {
+                  <span>Generando PDF...</span>
+                } @else {
+                  <span>📄 Descargar Constancia (PDF)</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-danger btn-sm cancel-btn"
+                [disabled]="cancellingId() === enrollment.id || !canCancel(enrollment)"
+                (click)="onCancel(enrollment)"
+                [title]="!canCancel(enrollment) ? 'Solo puedes cancelar hasta 24 horas antes del inicio' : 'Cancelar inscripción'"
+              >
+                @if (cancellingId() === enrollment.id) {
+                  <span>Cancelando...</span>
+                } @else if (!canCancel(enrollment)) {
+                  <span>Plazo de cancelación expirado (&lt;24h)</span>
+                } @else {
+                  <span>Cancelar Inscripción</span>
+                }
+              </button>
+            } @else {
+              <div class="cancelled-note">
+                <span>Esta inscripción fue cancelada y no cuenta con constancia de asistencia.</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

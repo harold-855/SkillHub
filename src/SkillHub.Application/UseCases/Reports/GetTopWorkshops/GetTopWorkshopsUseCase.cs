@@ -4,12 +4,18 @@ using SkillHub.Domain.Enums;
 
 namespace SkillHub.Application.UseCases.Reports.GetTopWorkshops;
 
+/// <summary>
+/// Use case generating analytical reports of workshops ordered by their active enrollment volume.
+/// </summary>
 public class GetTopWorkshopsUseCase
 {
     private readonly IWorkshopRepository _workshopRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IInstructorRepository _instructorRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetTopWorkshopsUseCase"/> class.
+    /// </summary>
     public GetTopWorkshopsUseCase(
         IWorkshopRepository workshopRepository,
         IEnrollmentRepository enrollmentRepository,
@@ -20,6 +26,10 @@ public class GetTopWorkshopsUseCase
         _instructorRepository = instructorRepository;
     }
 
+    /// <summary>
+    /// Queries workshops, aggregates active enrollment counts, and returns list descending by popularity.
+    /// </summary>
+    /// <returns>A collection of workshops ordered from highest to lowest active enrollment count.</returns>
     public async Task<IReadOnlyCollection<TopWorkshopResponse>>
         ExecuteAsync()
     {

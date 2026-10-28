@@ -1,0 +1,97 @@
+<div class="auth-page">
+  <div class="auth-card card">
+    <div class="auth-header">
+      <h2>Crear Cuenta</h2>
+      <p>Regístrate como participante en SkillHub</p>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="fullName" class="form-label">Nombre Completo</label>
+        <input
+          id="fullName"
+          type="text"
+          class="form-control"
+          placeholder="Ej. Juan Pérez"
+          formControlName="fullName"
+          [class.is-invalid]="registerForm.get('fullName')?.touched && registerForm.get('fullName')?.invalid"
+        />
+        @if (registerForm.get('fullName')?.touched && registerForm.get('fullName')?.hasError('required')) {
+          <p class="form-text-error">El nombre completo es obligatorio.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">Correo Electrónico</label>
+        <input
+          id="email"
+          type="email"
+          class="form-control"
+          placeholder="nombre@ejemplo.com"
+          formControlName="email"
+          [class.is-invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+        />
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.hasError('required')) {
+          <p class="form-text-error">El correo es obligatorio.</p>
+        }
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.hasError('email')) {
+          <p class="form-text-error">Ingresa un correo electrónico válido.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          class="form-control"
+          placeholder="Mínimo 6 caracteres"
+          formControlName="password"
+          [class.is-invalid]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+        />
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')) {
+          <p class="form-text-error">La contraseña es obligatoria.</p>
+        }
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.hasError('minlength')) {
+          <p class="form-text-error">Debe tener al menos 6 caracteres.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          class="form-control"
+          placeholder="Repite tu contraseña"
+          formControlName="confirmPassword"
+          [class.is-invalid]="(registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid) || (registerForm.touched && registerForm.hasError('passwordsMismatch'))"
+        />
+        @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.hasError('required')) {
+          <p class="form-text-error">Confirma tu contraseña.</p>
+        }
+        @if (registerForm.touched && registerForm.hasError('passwordsMismatch')) {
+          <p class="form-text-error">Las contraseñas no coinciden.</p>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading">
+        @if (isLoading) {
+          <span>Creando cuenta...</span>
+        } @else {
+          <span>Registrarme como Participante</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,10 @@ using SkillHub.Application.UseCases.Enrollments.CreateEnrollment;
 
 namespace SkillHub.Application.UseCases.Enrollments.ImportEnrollments;
 
+/// <summary>
+/// Use case processing batch participant enrollments uploaded via an Excel spreadsheet.
+/// Processes valid rows independently and accumulates rejection diagnostics for invalid ones.
+/// </summary>
 public class ImportEnrollmentsUseCase
 {
     private readonly IEnrollmentExcelReader _excelReader;
@@ -13,6 +17,9 @@ public class ImportEnrollmentsUseCase
     private readonly IWorkshopRepository _workshopRepository;
     private readonly CreateEnrollmentUseCase _createEnrollmentUseCase;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImportEnrollmentsUseCase"/> class.
+    /// </summary>
     public ImportEnrollmentsUseCase(
         IEnrollmentExcelReader excelReader,
         IParticipantRepository participantRepository,
@@ -25,6 +32,11 @@ public class ImportEnrollmentsUseCase
         _createEnrollmentUseCase = createEnrollmentUseCase;
     }
 
+    /// <summary>
+    /// Parses the file stream, validates participant and workshop existence, and invokes enrollment rules per row.
+    /// </summary>
+    /// <param name="fileStream">The binary stream of the uploaded Excel workbook.</param>
+    /// <returns>A comprehensive import outcome with counters and itemized row errors.</returns>
     public async Task<EnrollmentImportResult> ExecuteAsync(Stream fileStream)
     {
         var rows = await _excelReader.ReadAsync(fileStream);

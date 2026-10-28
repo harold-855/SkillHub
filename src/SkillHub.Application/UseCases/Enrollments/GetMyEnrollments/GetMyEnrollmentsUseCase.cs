@@ -1,14 +1,19 @@
 using SkillHub.Application.DTOs.Enrollments;
 using SkillHub.Application.Interfaces.Repositories;
-using SkillHub.Domain.Entities;
 
 namespace SkillHub.Application.UseCases.Enrollments.GetMyEnrollments;
 
+/// <summary>
+/// Use case retrieving the personal workshop enrollments belonging to the authenticated participant.
+/// </summary>
 public class GetMyEnrollmentsUseCase
 {
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IWorkshopRepository _workshopRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetMyEnrollmentsUseCase"/> class.
+    /// </summary>
     public GetMyEnrollmentsUseCase(
         IEnrollmentRepository enrollmentRepository,
         IWorkshopRepository workshopRepository)
@@ -17,6 +22,11 @@ public class GetMyEnrollmentsUseCase
         _workshopRepository = workshopRepository;
     }
 
+    /// <summary>
+    /// Queries all enrollments registered under the participant ID and maps them to presentation responses.
+    /// </summary>
+    /// <param name="participantId">The participant unique identifier.</param>
+    /// <returns>A collection of the participant's enrollments with workshop schedule and status.</returns>
     public async Task<IReadOnlyCollection<EnrollmentResponse>> ExecuteAsync(
         Guid participantId)
     {

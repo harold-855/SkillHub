@@ -1,0 +1,129 @@
+<div class="workshops-page container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <span class="badge badge-info hero-badge">Formación Práctica</span>
+      <h1 class="hero-title">Talleres Cortos y Presenciales</h1>
+      <p class="hero-subtitle">
+        Aprende fotografía, cocina, oratoria, diseño y más con expertos de SkillHub. Reserva tu cupo antes de que se agoten.
+      </p>
+    </div>
+
+    <div class="search-bar-wrapper">
+      <input
+        type="text"
+        class="form-control search-input"
+        placeholder="Buscar por título, código (ej. FOT-001) o instructor..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilter()"
+      />
+      @if (searchTerm) {
+        <button class="btn btn-secondary btn-sm clear-btn" (click)="searchTerm = ''; applyFilter()">
+          Limpiar
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Notifications -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <span class="alert-icon">✓</span>
+      <div>
+        <strong>¡Éxito!</strong> {{ successMessage() }}
+      </div>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger">
+      <span class="alert-icon">⚠</span>
+      <div>
+        <strong>Aviso:</strong> {{ errorMessage() }}
+      </div>
+    </div>
+  }
+
+  <!-- Content States -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando talleres disponibles...</p>
+    </div>
+  } @else if (filteredWorkshops().length === 0) {
+    <div class="empty-state card">
+      <div class="empty-icon">📅</div>
+      <h3>No se encontraron talleres disponibles</h3>
+      <p>
+        @if (searchTerm) {
+          No hay resultados para "{{ searchTerm }}". Intenta con otro término.
+        } @else {
+          En este momento no hay talleres futuros con inscripciones abiertas.
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="workshops-grid">
+      @for (workshop of filteredWorkshops(); track workshop.id) {
+        <div class="workshop-card card">
+          <div class="card-top">
+            <span class="badge badge-gray code-badge">{{ workshop.code }}</span>
+            <span
+              class="badge"
+              [class.badge-success]="workshop.availableSeats > 0"
+              [class.badge-danger]="workshop.availableSeats === 0"
+            >
+              {{ workshop.availableSeats > 0 ? workshop.availableSeats + ' cupos disponibles' : 'Sin cupos' }}
+            </span>
+          </div>
+
+          <h3 class="workshop-title">{{ workshop.title }}</h3>
+          <p class="workshop-description">{{ workshop.description }}</p>
+
+          <div class="workshop-meta">
+            <div class="meta-item">
+              <span class="meta-label">👨‍🏫 Instructor:</span>
+              <span class="meta-value">{{ workshop.instructorName }}</span>
+            </div>
+
+            <div class="meta-item">
+              <span class="meta-label">🕒 Inicio:</span>
+              <span class="meta-value">{{ workshop.startDateTime | date: 'dd/MM/yyyy, hh:mm a' }}</span>
+            </div>
+
+            <div class="meta-item">
+              <span class="meta-label">🏁 Fin:</span>
+              <span class="meta-value">{{ workshop.endDateTime | date: 'dd/MM/yyyy, hh:mm a' }}</span>
+            </div>
+
+            <div class="meta-item">
+              <span class="meta-label">👥 Capacidad total:</span>
+              <span class="meta-value">{{ workshop.maximumCapacity }} personas</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <a [routerLink]="['/workshops', workshop.id]" class="btn btn-secondary btn-sm">
+              Ver Detalle
+            </a>
+
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="workshop.availableSeats <= 0 || enrollingWorkshopId() === workshop.id"
+              (click)="onEnroll(workshop)"
+            >
+              @if (enrollingWorkshopId() === workshop.id) {
+                <span>Inscribiendo...</span>
+              } @else if (workshop.availableSeats <= 0) {
+                <span>Agotado</span>
+              } @else {
+                <span>Inscribirme</span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

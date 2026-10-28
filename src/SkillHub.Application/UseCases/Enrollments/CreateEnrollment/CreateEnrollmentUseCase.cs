@@ -4,12 +4,20 @@ using SkillHub.Domain.Entities;
 
 namespace SkillHub.Application.UseCases.Enrollments.CreateEnrollment;
 
+/// <summary>
+/// Use case orchestrating participant enrollment and enforcing all business rules:
+/// workshop must be in the future, participant cannot hold duplicate active enrollments,
+/// capacity limits cannot be exceeded, and no schedule collisions can exist.
+/// </summary>
 public class CreateEnrollmentUseCase
 {
     private readonly IParticipantRepository _participantRepository;
     private readonly IWorkshopRepository _workshopRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateEnrollmentUseCase"/> class.
+    /// </summary>
     public CreateEnrollmentUseCase(
         IParticipantRepository participantRepository,
         IWorkshopRepository workshopRepository,
@@ -20,6 +28,12 @@ public class CreateEnrollmentUseCase
         _enrollmentRepository = enrollmentRepository;
     }
 
+    /// <summary>
+    /// Executes the enrollment workflow with full business rule verification.
+    /// </summary>
+    /// <param name="participantId">The authenticated participant's identifier.</param>
+    /// <param name="request">The workshop enrollment payload.</param>
+    /// <returns>The unique identifier of the newly created enrollment.</returns>
     public async Task<Guid> ExecuteAsync(
         Guid participantId,
         CreateEnrollmentRequest request)

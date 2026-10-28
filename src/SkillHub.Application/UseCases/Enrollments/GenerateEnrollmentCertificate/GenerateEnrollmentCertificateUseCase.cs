@@ -5,6 +5,11 @@ using SkillHub.Domain.Enums;
 
 namespace SkillHub.Application.UseCases.Enrollments.GenerateEnrollmentCertificate;
 
+/// <summary>
+/// Use case producing official SkillHub PDF enrollment certificates.
+/// Enforces business rules: certificates can only be generated for active enrollments,
+/// and participants can only download their own certificates.
+/// </summary>
 public class GenerateEnrollmentCertificateUseCase
 {
     private readonly IEnrollmentRepository _enrollmentRepository;
@@ -13,6 +18,9 @@ public class GenerateEnrollmentCertificateUseCase
     private readonly IInstructorRepository _instructorRepository;
     private readonly ICertificateGenerator _certificateGenerator;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GenerateEnrollmentCertificateUseCase"/> class.
+    /// </summary>
     public GenerateEnrollmentCertificateUseCase(
         IEnrollmentRepository enrollmentRepository,
         IParticipantRepository participantRepository,
@@ -27,6 +35,13 @@ public class GenerateEnrollmentCertificateUseCase
         _certificateGenerator = certificateGenerator;
     }
 
+    /// <summary>
+    /// Validates enrollment active status and ownership, compiles document metadata, and triggers PDF rendering.
+    /// </summary>
+    /// <param name="enrollmentId">The unique identifier of the enrollment.</param>
+    /// <param name="currentUserId">The user identifier making the request.</param>
+    /// <param name="isEmployee">Flag indicating whether the requesting user has the Employee role.</param>
+    /// <returns>The raw PDF byte array suitable for binary file download.</returns>
     public async Task<byte[]> ExecuteAsync(
         Guid enrollmentId,
         Guid currentUserId,

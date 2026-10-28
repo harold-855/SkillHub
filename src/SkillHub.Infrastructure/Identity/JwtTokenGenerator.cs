@@ -7,15 +7,28 @@ using SkillHub.Application.Interfaces.Authentication;
 
 namespace SkillHub.Infrastructure.Identity;
 
+/// <summary>
+/// Infrastructure service that issues cryptographically signed HMAC-SHA256 JWT tokens.
+/// </summary>
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JwtTokenGenerator"/> class.
+    /// </summary>
     public JwtTokenGenerator(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Constructs a JWT bearer token embedding user subject, email, unique JTI, and assigned roles.
+    /// </summary>
+    /// <param name="userId">The unique user identifier.</param>
+    /// <param name="email">The user email address.</param>
+    /// <param name="roles">The set of assigned authorization roles.</param>
+    /// <returns>A tuple containing the serialized token string and its UTC expiration timestamp.</returns>
     public Task<(string AccessToken, DateTime ExpiresAt)> GenerateTokenAsync(
         Guid userId,
         string email,

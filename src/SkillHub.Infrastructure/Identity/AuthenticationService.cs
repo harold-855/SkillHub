@@ -6,6 +6,10 @@ using SkillHub.Domain.Entities;
 
 namespace SkillHub.Infrastructure.Identity;
 
+/// <summary>
+/// Infrastructure authentication service coordinating ASP.NET Core Identity user management
+/// with Domain participant aggregates and cryptographic JWT issuance.
+/// </summary>
 public class AuthenticationService : IAuthenticationService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -13,6 +17,9 @@ public class AuthenticationService : IAuthenticationService
     private readonly IInstructorRepository _instructorRepository;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthenticationService"/> class.
+    /// </summary>
     public AuthenticationService(
         UserManager<ApplicationUser> userManager,
         IParticipantRepository participantRepository,
@@ -25,6 +32,12 @@ public class AuthenticationService : IAuthenticationService
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
+    /// <summary>
+    /// Validates participant data, creates an Identity account, assigns the Participant role,
+    /// creates the domain Participant record, and returns an initial JWT session token.
+    /// </summary>
+    /// <param name="request">The participant registration payload.</param>
+    /// <returns>The authentication response with issued JWT token.</returns>
     public async Task<AuthenticationResponse> RegisterParticipantAsync(
         RegisterRequest request)
     {
@@ -136,6 +149,11 @@ public class AuthenticationService : IAuthenticationService
         };
     }
 
+    /// <summary>
+    /// Authenticates participant or employee credentials and generates an access token.
+    /// </summary>
+    /// <param name="request">The login request payload.</param>
+    /// <returns>The authentication response with issued JWT token.</returns>
     public async Task<AuthenticationResponse> LoginAsync(
         LoginRequest request)
     {
